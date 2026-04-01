@@ -21,7 +21,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: .
+        working-directory: ./mon-portfolio
 
     steps:
       - name: Récupérer le dépôt
@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: ./package-lock.json
+          cache-dependency-path: ./mon-portfolio/package-lock.json
 
       - name: Installer les dépendances
         run: npm ci
@@ -46,4 +46,16 @@ jobs:
       - name: Uploader l’artefact Pages
         uses: actions/upload-pages-artifact@v3
         with:
+          path: ./mon-portfolio/dist
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Déployer sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
