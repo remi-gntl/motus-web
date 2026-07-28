@@ -1,15 +1,21 @@
-export default function Cell({ value, status }) {
-  const statusClasses = {
+export default function Cell({ value, status, delay = 0, celebrate = false }) {
+  const statusColorClasses = {
     correct: 'cell-correct',
     present: 'cell-present',
     absent: 'cell-absent',
-    default: 'cell-default'
   };
 
-  const appliedClass = status ? statusClasses[status] : statusClasses.default;
+  const colorClass = status ? statusColorClasses[status] : 'cell-default';
+  const animClass = status ? 'cell-flip' : 'cell-pop';
+  const style = status
+    ? { animationDelay: celebrate ? `${delay}ms, ${delay + 500}ms` : `${delay}ms` }
+    : undefined;
 
   return (
-    <div className={`cell-base ${appliedClass}`}>
+    <div
+      className={`cell-base ${colorClass} ${animClass} ${celebrate ? 'cell-bounce' : ''}`}
+      style={style}
+    >
       {value}
     </div>
   );

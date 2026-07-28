@@ -8,27 +8,117 @@
 }
 
 @layer components {
+  .motus-studio-bg {
+    background: radial-gradient(ellipse at center top, #1e3a8a 0%, #0b1130 55%, #05070f 100%);
+  }
+
   .cell-base {
-    @apply w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-white text-3xl font-bold uppercase border-2 transition-all duration-300;
+    @apply w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-white text-3xl font-bold uppercase border-2 rounded;
   }
 
   .cell-default {
-    @apply bg-motus-blue border-motus-blue;
+    @apply bg-motus-blue border-blue-400/50 shadow-inner;
   }
-  
+
   .cell-correct {
-    @apply bg-motus-red border-motus-red;
+    @apply bg-motus-red border-red-300/50;
   }
-  
+
   .cell-present {
-    @apply bg-motus-yellow border-motus-yellow rounded-full scale-90 text-black;
+    @apply bg-motus-yellow border-yellow-200/50 rounded-full scale-90 text-black;
   }
-  
+
   .cell-absent {
-    @apply bg-blue-800 border-blue-800 opacity-60;
+    @apply bg-blue-800 border-blue-700 opacity-60;
   }
 
   .motus-grid-container {
-    @apply flex flex-col items-center mt-8 bg-motus-blue-dark p-4 rounded-lg shadow-xl inline-block;
+  @apply flex flex-col items-center mt-8 bg-motus-blue-dark p-4 rounded-2xl;
+    box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.15), 0 20px 40px -10px rgba(0, 0, 0, 0.6), inset 0 2px 4px rgba(255,255,255,0.05);
+  }
+
+  .result-panel {
+    animation: panel-in 0.4s ease both;
+  }
+
+  .confetti-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 50;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    top: -10px;
+    border-radius: 2px;
+    animation-name: confetti-fall;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+  }
+}
+
+@keyframes flip-in {
+  0%   { transform: rotateX(0deg); }
+  50%  { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}
+
+@keyframes bounce-cell {
+  0%, 100% { transform: translateY(0); }
+  30%      { transform: translateY(-16px); }
+  50%      { transform: translateY(0); }
+  70%      { transform: translateY(-6px); }
+}
+
+@keyframes pop {
+  0%   { transform: scale(0.7); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  10%, 90%      { transform: translateX(-2px); }
+  20%, 80%      { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-8px); }
+  40%, 60%      { transform: translateX(8px); }
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.9; }
+}
+
+.cell-flip {
+  animation-name: flip-in;
+  animation-duration: 0.45s;
+  animation-timing-function: ease;
+  animation-fill-mode: both;
+}
+
+.cell-flip.cell-bounce {
+  animation-name: flip-in, bounce-cell;
+  animation-duration: 0.45s, 0.6s;
+  animation-timing-function: ease, ease;
+  animation-fill-mode: both, both;
+}
+
+.cell-pop {
+  animation: pop 0.15s ease;
+}
+
+.row-shake {
+  animation: shake 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cell-flip, .cell-flip.cell-bounce, .cell-pop, .row-shake, .result-panel, .confetti-piece {
+    animation: none !important;
   }
 }

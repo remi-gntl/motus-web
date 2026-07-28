@@ -1,32 +1,59 @@
-// downloadDict.js
 import fs from 'fs';
 
-async function generateDictionary() {
-  console.log("📥 Téléchargement du dictionnaire brut depuis GitHub...");
-  
-  try {
-    // On télécharge la liste complète Gutenberg (OpenLexicon)
-    const response = await fetch('https://raw.githubusercontent.com/chrplr/openlexicon/master/datasets-info/Liste-de-mots-francais-Gutenberg/liste.de.mots.francais.frgut.txt');
-    const text = await response.text();
-    
-    console.log("🧹 Nettoyage et formatage des mots...");
-    
-    const words = text.split('\n')
-      // Mise en majuscules et suppression des accents
-      .map(w => w.trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
-      // On ne garde que les mots de 5 à 10 lettres contenant uniquement des lettres de A à Z (pas de tirets)
-      .filter(w => w.length >= 5 && w.length <= 10 && /^[A-Z]+$/.test(w));
-      
-    // En supprimant les accents, "été" et "ete" deviennent "ETE". On utilise un Set pour retirer les doublons.
-    const uniqueWords = [...new Set(words)];
+const LEXIQUE_URL = 'http://www.lexique.org/databases/Lexique383/Lexique383.tsv';
+const MIN_LEN = 5;
+const MAX_LEN = 10;
+const ANSWER_MIN_FREQ = 3;
+const ANSWER_CGRAMS = new Set(['NOM', 'ADJ', 'VER', 'ADV']);
 
-    // On écrit le résultat propre dans le dossier public
-    fs.writeFileSync('./public/dictionnaire.txt', uniqueWords.join('\n'));
-    
-    console.log(`✅ Terminé ! ${uniqueWords.length} mots parfaits pour Motus ont été sauvegardés dans public/dictionnaire.txt.`);
-  } catch (error) {
-    console.error("❌ Erreur :", error);
-  }
+const normalize = (w) => w.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+async function generateDictionaries() {
+  console.log("Téléchargement de Lexique383 (base CNRS)...");
+  const response = await fetch(LEXIQUE_URL);
+  const text = await response.text();
+  const lines = text.split('\n').filter(Boolean);
+
+  const header = lines[0].split('\t');
+  const idx = (col) => header.indexOf(col);
+  const iOrtho = idx('ortho');
+  const iCgram = idx('cgram');
+  const iFreq = idx('freqlivres');
+  const iIslem = idx('islem');
+  const iNbLettres = idx('nblettres');
+
+  const rows = lines.slice(1).map(l => l.split('\t'));
+
+  console.log("Dico RÉPONSES : mots courants, lemmes uniquement...");
+  const answerWords = rows
+    .filter(cols => {
+      const nbLettres = parseInt(cols[iNbLettres], 10);
+      return ANSWER_CGRAMS.has(cols[iCgram]) &&
+        cols[iIslem] === '1' &&
+        parseFloat(cols[iFreq]) >= ANSWER_MIN_FREQ &&
+        nbLettres >= MIN_LEN && nbLettres <= MAX_LEN;
+    })
+    .map(cols => normalize(cols[iOrtho]))
+    .filter(w => /^[A-Z]+$/.test(w));
+
+  console.log("Dico VALIDATION : toutes formes, sans filtre de fréquence...");
+
+  const validWords = rows
+    .filter(cols => {
+      const nbLettres = parseInt(cols[iNbLettres], 10);
+      return nbLettres >= MIN_LEN && nbLettres <= MAX_LEN;
+    })
+    .map(cols => normalize(cols[iOrtho]))
+    .filter(w => /^[A-Z]+$/.test(w));
+
+  const uniqueAnswers = [...new Set(answerWords)];
+  const uniqueValid = [...new Set([...validWords, ...uniqueAnswers])];
+
+  fs.writeFileSync('./public/mots-reponses.txt', uniqueAnswers.join('\n'));
+  fs.writeFileSync('./public/mots-valides.txt', uniqueValid.join('\n'));
+
+  console.log(`${uniqueAnswers.length} mots-réponses sauvegardés dans public/mots-reponses.txt`);
+  console.log(`${uniqueValid.length} mots valides sauvegardés dans public/mots-valides.txt`);
 }
 
-generateDictionary();
+generateDictionaries().catch(err => console.error("Erreur :", err));
