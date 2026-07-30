@@ -12,12 +12,12 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [score, setScore] = useState(() => {
-    const savedScore = localStorage.getItem('motus-score');
+    const savedScore = localStorage.getItem("motus-score");
     return savedScore ? parseInt(savedScore, 10) : 0;
   });
 
   useEffect(() => {
-    localStorage.setItem('motus-score', score);
+    localStorage.setItem("motus-score", score);
   }, [score]);
 
   useEffect(() => {
@@ -80,11 +80,11 @@ function Game({ solution, score, setScore, onNextWord }) {
     const handleBeforeUnload = (e) => {
       if (!isGameOver) {
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = "";
       }
     };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isGameOver]);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ function Game({ solution, score, setScore, onNextWord }) {
 
   useEffect(() => {
     if (isCorrect) {
-      const points = (solution.length * 20) - (turn * 5);
+      const points = solution.length * 20 - turn * 5;
       setScore((prev) => prev + points);
 
       const timer = setTimeout(() => {
@@ -123,21 +123,22 @@ function Game({ solution, score, setScore, onNextWord }) {
 
   return (
     <div className="min-h-screen motus-studio-bg flex flex-col items-center py-6 sm:py-10 relative overflow-hidden">
-
       {isCorrect && <Confetti />}
 
       <div className="flex w-full max-w-lg justify-between items-end px-4 mb-4">
         <h1
           className="text-5xl font-extrabold text-motus-yellow tracking-widest italic"
           style={{
-            textShadow: "3px 3px 0 var(--color-motus-red), 6px 6px 14px rgba(0,0,0,0.5)",
+            textShadow:
+              "3px 3px 0 var(--color-motus-red), 6px 6px 14px rgba(0,0,0,0.5)",
           }}
         >
           MOTUS
         </h1>
         <div className="flex flex-col items-end gap-2">
           <div className="text-white text-xl font-bold">
-            Score: <span className="text-motus-yellow text-3xl ml-2">{score}</span>
+            Score:{" "}
+            <span className="text-motus-yellow text-3xl ml-2">{score}</span>
           </div>
           <button
             onClick={() => setShowLeaderboard(true)}
@@ -145,6 +146,9 @@ function Game({ solution, score, setScore, onNextWord }) {
           >
             🏆 Classement
           </button>
+          {scoreJustSubmitted && (
+            <p className="text-green-400 text-xs mt-1">Score enregistré ✓</p>
+          )}
         </div>
       </div>
 
@@ -156,7 +160,8 @@ function Game({ solution, score, setScore, onNextWord }) {
         )}
         {isCorrect && (
           <div className="bg-green-500 text-white px-6 py-2 rounded-lg font-bold text-lg shadow-lg">
-            Bravo ! Le mot était bien <span className="uppercase font-black">{solution}</span> 🎉
+            Bravo ! Le mot était bien{" "}
+            <span className="uppercase font-black">{solution}</span> 🎉
           </div>
         )}
       </div>
@@ -174,10 +179,11 @@ function Game({ solution, score, setScore, onNextWord }) {
         <Keyboard usedKeys={usedKeys} handleKeyup={handleKeyup} />
       )}
 
-      {(isGameOver && !isCorrect) && (
+      {isGameOver && !isCorrect && (
         <div className="result-panel mt-8 flex flex-col items-center bg-gray-800 p-6 rounded-lg shadow-2xl border border-gray-700 z-10">
           <p className="text-red-400 font-bold text-xl mb-4">
-            Perdu... Le mot était <span className="text-white uppercase">{solution}</span>
+            Perdu... Le mot était{" "}
+            <span className="text-white uppercase">{solution}</span>
           </p>
           <button
             onClick={handleReplay}

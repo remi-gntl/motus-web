@@ -1,10 +1,11 @@
 import Row from './Row';
 
 export default function Grid({ currentGuess, guesses, turn, wordLength, shakeSignal, isCorrect }) {
+  const cellSize = `clamp(1.75rem, calc((100vw - 3rem) / ${wordLength} - 0.35rem), 4rem)`;
+
   return (
-    <div className="motus-grid-container">
+    <div className="motus-grid-container" style={{ '--cell-size': cellSize }}>
       {guesses.map((guess, index) => {
-        // AJOUT DE "!isCorrect" ICI
         if (turn === index && !isCorrect) {
           return (
             <Row

@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { checkGuess } from '../utils/gameLogic';
-import { isValidWord } from '../utils/words';
+import { useState } from "react";
+import { checkGuess } from "../utils/gameLogic";
+import { isValidWord } from "../utils/words";
 
 const buildInitialState = (solution) => {
-  const arr = Array(solution.length).fill('');
+  const arr = Array(solution.length).fill("");
   arr[0] = solution[0];
   return arr;
 };
@@ -14,64 +14,74 @@ export default function useWordle(solution) {
   const [history, setHistory] = useState([]);
   const [isCorrect, setIsCorrect] = useState(false);
   const [usedKeys, setUsedKeys] = useState({});
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
   const [shakeSignal, setShakeSignal] = useState(0);
-  const [knownLetters, setKnownLetters] = useState(() => buildInitialState(solution));
-  const [currentGuess, setCurrentGuess] = useState(() => buildInitialState(solution));
+  const [knownLetters, setKnownLetters] = useState(() =>
+    buildInitialState(solution),
+  );
+  const [currentGuess, setCurrentGuess] = useState(() =>
+    buildInitialState(solution),
+  );
 
   const isEditable = (i) => i !== 0;
-  const triggerShake = () => setShakeSignal(s => s + 1);
+  const triggerShake = () => setShakeSignal((s) => s + 1);
 
-const formatGuess = () => {
-    const guessString = currentGuess.join('');
+  const formatGuess = () => {
+    const guessString = currentGuess.join("");
     const formattedGuess = checkGuess(solution, guessString);
 
-    setGuesses(prev => {
+    setGuesses((prev) => {
       const newGuesses = [...prev];
       newGuesses[turn] = formattedGuess;
       return newGuesses;
     });
 
-    setHistory(prev => [...prev, guessString]);
+    setHistory((prev) => [...prev, guessString]);
 
-    setUsedKeys(prev => {
+    setUsedKeys((prev) => {
       const newKeys = { ...prev };
-      formattedGuess.forEach(l => {
+      formattedGuess.forEach((l) => {
         const currentColor = newKeys[l.letter];
-        if (l.status === 'correct') newKeys[l.letter] = 'correct';
-        else if (l.status === 'present' && currentColor !== 'correct') newKeys[l.letter] = 'present';
-        else if (l.status === 'absent' && currentColor !== 'correct' && currentColor !== 'present') newKeys[l.letter] = 'absent';
+        if (l.status === "correct") newKeys[l.letter] = "correct";
+        else if (l.status === "present" && currentColor !== "correct")
+          newKeys[l.letter] = "present";
+        else if (
+          l.status === "absent" &&
+          currentColor !== "correct" &&
+          currentColor !== "present"
+        )
+          newKeys[l.letter] = "absent";
       });
       return newKeys;
     });
 
     const newKnown = [...knownLetters];
     formattedGuess.forEach((l, i) => {
-      if (l.status === 'correct') newKnown[i] = l.letter;
+      if (l.status === "correct") newKnown[i] = l.letter;
     });
     setKnownLetters(newKnown);
 
     if (guessString === solution) {
       setIsCorrect(true);
     } else {
-      setCurrentGuess(newKnown.map(l => l || ''));
-      setTurn(prev => prev + 1);
+      setCurrentGuess(newKnown.map((l) => l || ""));
+      setTurn((prev) => prev + 1);
     }
   };
 
   const handleKeyup = ({ key }) => {
     if (isCorrect || turn > 5) return;
-    if (errorMsg) setErrorMsg('');
+    if (errorMsg) setErrorMsg("");
 
-    if (key === 'Enter') {
-      const guessString = currentGuess.join('');
-      if (currentGuess.some(l => !l)) {
-        setErrorMsg('Complète le mot avant de valider !');
+    if (key === "Enter") {
+      const guessString = currentGuess.join("");
+      if (currentGuess.some((l) => !l)) {
+        setErrorMsg("Complète le mot avant de valider !");
         triggerShake();
         return;
       }
       if (history.includes(guessString)) {
-        setErrorMsg('Tu as déjà essayé ce mot !');
+        setErrorMsg("Tu as déjà essayé ce mot !");
         triggerShake();
         return;
       }
@@ -84,14 +94,14 @@ const formatGuess = () => {
       return;
     }
 
-    if (key === 'Backspace') {
+    if (key === "Backspace") {
       const editableFilled = currentGuess
         .map((l, i) => ({ l, i }))
         .filter(({ l, i }) => isEditable(i) && l);
       const last = editableFilled[editableFilled.length - 1];
       if (last) {
         const newGuess = [...currentGuess];
-        newGuess[last.i] = '';
+        newGuess[last.i] = "";
         setCurrentGuess(newGuess);
       }
       return;
@@ -107,5 +117,14 @@ const formatGuess = () => {
     }
   };
 
-  return { turn, currentGuess, guesses, isCorrect, usedKeys, errorMsg, shakeSignal, handleKeyup };
+  return {
+    turn,
+    currentGuess,
+    guesses,
+    isCorrect,
+    usedKeys,
+    errorMsg,
+    shakeSignal,
+    handleKeyup,
+  };
 }
