@@ -117,8 +117,8 @@
   animation: shake 0.5s ease;
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* @media (prefers-reduced-motion: reduce) {
   .cell-flip, .cell-flip.cell-bounce, .cell-pop, .row-shake, .result-panel, .confetti-piece {
     animation: none !important;
   }
-}
+} */

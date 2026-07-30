@@ -1,10 +1,11 @@
 import Row from './Row';
 
-export default function Grid({ currentGuess, guesses, turn, wordLength, shakeSignal }) {
+export default function Grid({ currentGuess, guesses, turn, wordLength, shakeSignal, isCorrect }) {
   return (
     <div className="motus-grid-container">
       {guesses.map((guess, index) => {
-        if (turn === index) {
+        // AJOUT DE "!isCorrect" ICI
+        if (turn === index && !isCorrect) {
           return (
             <Row
               key={index}

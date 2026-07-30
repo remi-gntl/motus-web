@@ -22,7 +22,7 @@ export default function useWordle(solution) {
   const isEditable = (i) => i !== 0;
   const triggerShake = () => setShakeSignal(s => s + 1);
 
-  const formatGuess = () => {
+const formatGuess = () => {
     const guessString = currentGuess.join('');
     const formattedGuess = checkGuess(solution, guessString);
 
@@ -50,10 +50,13 @@ export default function useWordle(solution) {
       if (l.status === 'correct') newKnown[i] = l.letter;
     });
     setKnownLetters(newKnown);
-    setCurrentGuess(newKnown.map(l => l || ''));
-    setTurn(prev => prev + 1);
 
-    if (guessString === solution) setIsCorrect(true);
+    if (guessString === solution) {
+      setIsCorrect(true);
+    } else {
+      setCurrentGuess(newKnown.map(l => l || ''));
+      setTurn(prev => prev + 1);
+    }
   };
 
   const handleKeyup = ({ key }) => {
