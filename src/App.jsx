@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import Grid from "./components/grid/Grid";
 import Keyboard from "./components/keyboard/Keyboard";
 import Confetti from "./components/layout/Confetti";
+import ScoreSubmitModal from "./components/layout/ScoreSubmitModal";
+import LeaderboardModal from "./components/layout/LeaderboardModal";
 import useWordle from "./hooks/useWordle";
 import { loadDictionary, getRandomWord } from "./utils/words";
 
 function App() {
   const [solution, setSolution] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [score, setScore] = useState(() => {
     const savedScore = localStorage.getItem('motus-score');
     return savedScore ? parseInt(savedScore, 10) : 0;
@@ -20,7 +22,7 @@ function App() {
 
   useEffect(() => {
     let active = true;
-    const initGame = async () => {  
+    const initGame = async () => {
       await loadDictionary();
       if (active) {
         setSolution(getRandomWord());
@@ -46,12 +48,12 @@ function App() {
   }
 
   return (
-    <Game 
-      key={solution} 
-      solution={solution} 
+    <Game
+      key={solution}
+      solution={solution}
       score={score}
       setScore={setScore}
-      onNextWord={handleNextWord} 
+      onNextWord={handleNextWord}
     />
   );
 }
@@ -63,12 +65,16 @@ function Game({ solution, score, setScore, onNextWord }) {
     guesses,
     isCorrect,
     turn,
-    usedKeys, 
+    usedKeys,
     errorMsg,
     shakeSignal,
   } = useWordle(solution);
 
   const isGameOver = isCorrect || turn > 5;
+
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showScoreSubmit, setShowScoreSubmit] = useState(false);
+  const [scoreJustSubmitted, setScoreJustSubmitted] = useState(false);
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -92,16 +98,23 @@ function Game({ solution, score, setScore, onNextWord }) {
   useEffect(() => {
     if (isCorrect) {
       const points = (solution.length * 20) - (turn * 5);
-      setScore((prev) => prev + points); 
-      
+      setScore((prev) => prev + points);
+
       const timer = setTimeout(() => {
-        onNextWord(); 
-      }, 3500); 
-      
+        onNextWord();
+      }, 3500);
+
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCorrect]); 
+  }, [isCorrect]);
+
+  useEffect(() => {
+    if (isGameOver && !isCorrect && score > 0) {
+      setShowScoreSubmit(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGameOver, isCorrect]);
 
   const handleReplay = () => {
     setScore(0);
@@ -110,7 +123,7 @@ function Game({ solution, score, setScore, onNextWord }) {
 
   return (
     <div className="min-h-screen motus-studio-bg flex flex-col items-center py-6 sm:py-10 relative overflow-hidden">
-      
+
       {isCorrect && <Confetti />}
 
       <div className="flex w-full max-w-lg justify-between items-end px-4 mb-4">
@@ -122,8 +135,16 @@ function Game({ solution, score, setScore, onNextWord }) {
         >
           MOTUS
         </h1>
-        <div className="text-white text-xl font-bold mb-1">
-          Score: <span className="text-motus-yellow text-3xl ml-2">{score}</span>
+        <div className="flex flex-col items-end gap-2">
+          <div className="text-white text-xl font-bold">
+            Score: <span className="text-motus-yellow text-3xl ml-2">{score}</span>
+          </div>
+          <button
+            onClick={() => setShowLeaderboard(true)}
+            className="text-sm bg-gray-800 text-motus-yellow px-3 py-1 rounded font-bold border border-gray-700 hover:bg-gray-700 transition-colors cursor-pointer"
+          >
+            🏆 Classement
+          </button>
         </div>
       </div>
 
@@ -166,6 +187,25 @@ function Game({ solution, score, setScore, onNextWord }) {
           </button>
         </div>
       )}
+
+      {showScoreSubmit && (
+        <ScoreSubmitModal
+          score={score}
+          onClose={() => setShowScoreSubmit(false)}
+          onSubmitted={() => {
+            setShowScoreSubmit(false);
+            setScoreJustSubmitted(true);
+          }}
+        />
+      )}
+
+      {showLeaderboard && (
+        <LeaderboardModal onClose={() => setShowLeaderboard(false)} />
+      )}
+
+      <footer className="mt-10 text-gray-500 text-xs text-center">
+        Motus — créé par Le Rem's
+      </footer>
     </div>
   );
 }
