@@ -37,7 +37,6 @@ export default function useWordle(solution) {
     });
 
     setHistory((prev) => [...prev, guessString]);
-
     setUsedKeys((prev) => {
       const newKeys = { ...prev };
       formattedGuess.forEach((l) => {
